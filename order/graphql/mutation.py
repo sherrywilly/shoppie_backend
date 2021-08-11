@@ -91,12 +91,11 @@ class OrderMutation(graphene.Mutation):
                 pay_order = client.order.create(
                     {'amount': int(order.basic_amount) * 100, 'currency': "INR", 'receipt': str(order.pk),
                      'payment_capture': 1})
-                payment = Payment()
-
-                payment.rzp_order_id = pay_order.get('id')
-                payment.total = order.basic_amount
+                payment,_ = Payment.objects.get_or_create(rzp_order_id=pay_order.get('id'))
+                print(order.basic_amount)
+                payment.total = order.total_order_value
                 payment.order = order
-                payment.charged_value = order.basic_amount
+                # payment.charged_value = order.total_order_value
                 payment.raw_data = pay_order
                 payment.save()
             return OrderMutation(order=order, payment=payment)

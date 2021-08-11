@@ -35,15 +35,15 @@ class Product(models.Model):
                     "validate": False,
                 }
             },
-            "Image": {
-                'class': 'ImageTool',
-                "config": {
-                    "endpoints": {
-                        # Your custom backend file uploader endpoint
-                        "byFile": "/editorjs/image_upload/"
-                    }
-                }
-            }
+            # "Image": {
+            #     'class': 'ImageTool',
+            #     "config": {
+            #         "endpoints": {
+            #             # Your custom backend file uploader endpoint
+            #             "byFile": "/editorjs/image_upload/"
+            #         }
+            #     }
+            # }
         },
         null=True,
         blank=True,
@@ -53,7 +53,7 @@ class Product(models.Model):
     length = models.FloatField(default=0)
     width = models.FloatField(default=0)
     height = models.FloatField(default=0)
-    price = models.DecimalField(default=00,decimal_places=2, max_digits=6)
+    price = models.DecimalField(default=00, decimal_places=2, max_digits=6)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
@@ -72,9 +72,10 @@ class Product(models.Model):
         image = self.images.filter(is_featured=True).first()
         return image
 
+
 class ProductImage(models.Model):
     product = models.ForeignKey(
-        Product, on_delete=models.CASCADE,related_name="images"
+        Product, on_delete=models.CASCADE, related_name="images"
     )
     image = VersatileImageField(upload_to="products", ppoi_field="ppoi", blank=False)
     ppoi = PPOIField()
@@ -82,9 +83,6 @@ class ProductImage(models.Model):
     alt = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
-
-
-
 
     def get_ordering_queryset(self):
         return self.product.images.all()
@@ -99,15 +97,13 @@ class ProductImage(models.Model):
         return self.product.name + " - " + self.image.name
 
 
-
 class ProductVideo(models.Model):
     product = models.ForeignKey(
         Product, related_name="video", on_delete=models.CASCADE
     )
-    video = models.FileField(upload_to='products/videos',blank=False)
+    video = models.FileField(upload_to='products/videos', blank=False)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
-
 
     def save(self, *args, **kwargs):
         vid_name = self.video.name[:len(self.product.name)]

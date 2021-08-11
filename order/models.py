@@ -24,13 +24,14 @@ class Address(models.Model):
 
 
 class Order(models.Model):
-    ORDER_STATUS = (('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Shipped', 'Shipped'),
-                    ('Completed', 'Completed'), ('Cancelled', 'Cancelled'),('partiallyRefunded','PartiallyRefunded'))
+    ORDER_STATUS = (('Pending', 'Pending'), ('processing', 'Processing'), ('packed', 'Packed'),
+                    ('shipped', 'Shipped'), ('in_transit', 'In Transit'), ('delivered', 'Delivered'),
+                    ('returned', 'Returned'), ('cancelled', 'Cancelled'))
     order_id = models.CharField(max_length=100, default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     billing_address = models.ForeignKey(Address, on_delete=models.DO_NOTHING, related_name="billing_address")
     shipping_address = models.ForeignKey(Address, on_delete=models.DO_NOTHING, related_name="shipping_address")
-    total_order_value = models.DecimalField(decimal_places=2, max_digits=6)
+    total_order_value = models.DecimalField(decimal_places=2, max_digits=6,blank=True,null=True)
     shipping_charges = models.DecimalField(default=00, decimal_places=2, max_digits=6)
     cart_id = models.CharField(blank=True, max_length=100)
     is_payment_successfull = models.BooleanField(default=False)
@@ -63,16 +64,16 @@ class OrderLine(models.Model):
     def price(self):
         return self.product.price
 
+
 class Design(models.Model):
     order_line = models.ForeignKey(OrderLine, on_delete=models.PROTECT, null=True, related_name="design")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    cart_id = models.CharField(max_length=100, verbose_name="cart id",blank=True,null=True)
-    cart_line = models.CharField(max_length=100,blank=True,null=True)
+    cart_id = models.CharField(max_length=100, verbose_name="cart id", blank=True, null=True)
+    cart_line = models.CharField(max_length=100, blank=True, null=True)
     image = models.ImageField(upload_to="order_image/", blank=False)
     video = models.FileField(upload_to="order_video/", blank=False)
-    created_at = models.DateTimeField(auto_now_add=True,blank=True,null=True)
-    updated_at = models.DateTimeField(auto_now=True,blank=True,null=True)
-
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
     def __str__(self):
         return self.cart_id

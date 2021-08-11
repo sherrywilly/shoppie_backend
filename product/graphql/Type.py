@@ -1,3 +1,4 @@
+from django.contrib.sites.shortcuts import get_current_site
 from graphene_django import DjangoObjectType
 import graphene
 from graphene import Node
@@ -10,8 +11,19 @@ class ProductNode(DjangoObjectType):
         model = Product
         interfaces = (Node,)
         filter_fields = ('name', 'price',)
-
+    desc = graphene.JSONString()
     pk = graphene.Int()
+    def resolve_desc(self,info):
+        x = self.desc
+        # print(x)
+        for i in x['blocks']:
+
+            try:
+                _x = i['data']['file']['url']
+                i['data']['file']['url'] = info.context.build_absolute_uri(_x)
+            except Exception as e:
+                print(e)
+        return x
 
     def resolve_pk(self, info):
         return self.pk
@@ -27,7 +39,7 @@ class ProductImageNode(DjangoObjectType):
     image = graphene.String()
 
     def resolve_image(self, info):
-        return info.context.build_absolute_uri(self.image.thumbnail['100x100'].url)
+        return info.context.build_absolute_uri(self.image.thumbnail['500x500'].url)
 
     def resolve_pk(self, info):
         return self.pk

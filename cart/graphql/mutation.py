@@ -22,9 +22,8 @@ class CartLineMutation(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, self, info, product, price, **kwargs):
-        # user = info.context.user ||0
-        # print(kwargs.get())
-        user_id = 1
+
+        user_id = info.context.user.pk
         cart, _ = Cart.objects.get_or_create(user_id=user_id)
         try:
             with transaction.atomic():
