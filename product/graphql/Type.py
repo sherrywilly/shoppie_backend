@@ -13,6 +13,7 @@ class ProductNode(DjangoObjectType):
         filter_fields = ('name', 'price',)
     desc = graphene.JSONString()
     pk = graphene.Int()
+
     def resolve_desc(self,info):
         x = self.desc
         # print(x)
