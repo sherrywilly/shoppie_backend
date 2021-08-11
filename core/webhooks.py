@@ -2,47 +2,70 @@ import json
 
 import razorpay
 from django.http.response import JsonResponse
-from django.views import  View
+from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from core.settings import RAZORPAY_KEY, RAZORPAY_SECRET, RAZORPAY_WEBHOOK_SECRET
 from payment.models import Payment, Transaction
 
 client = razorpay.Client(auth=(RAZORPAY_KEY, RAZORPAY_SECRET))
+
+
 class RazorHookView(View):
-    def get(self):
-        return  JsonResponse({
-            'error':True,
-            'message':"Invalid  Request"
+    def get(self,request):
+        return JsonResponse({
+            'error': True,
+            'message': "Invalid  Request"
         })
-    @csrf_exempt
-    def post(self,request):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(RazorHookView, self).dispatch(*args, **kwargs)
+
+    def post(self, request):
+
         webhookbody = request.body.decode('utf-8')
         body = json.loads(webhookbody)
+        print(body)
+        payload_body = json.dumps(body, separators=(',', ':'))
         signature = request.headers['X-Razorpay-Signature']
         try:
             payment_id = body['payload']['payment']['entity']['id']
             razorpay_order_id = body['payload']['payment']['entity']['order_id']
             razorpay_amount = body['payload']['payment']['entity']['amount']
             payment_method = body['payload']['payment']['entity']['method']
-            verify = client.utility.verify_webhook_signature(body, signature, RAZORPAY_WEBHOOK_SECRET)
+            verify = client.utility.verify_webhook_signature(payload_body, signature, RAZORPAY_WEBHOOK_SECRET)
             if body['event'] == 'refund.processed':
                 print('refund initiated')
                 _x = body['payload']['refund']
                 print(_x['entity']['id'])
                 order = Payment.objects.get(rzp_order_id=razorpay_order_id)
-
-                order.order.payment_status = 'refunded'
-                order.order.save()
                 trans = Transaction()
+                if order.total > (_x['entity']['amount']/100) or order.total != (_x['entity']['amount']/100):
+                    order.status = "PartiallyRefunded"
+                    order.order.status = 'partiallyRefunded'
+                    trans.type = 3
+                    if (body['payment']['amount_refunded']/100) == order.amount_valid_for_refund:
+                        order.order.status = 'Cancelled'
+                        order.status = 'Refunded'
+
+                        trans.type = 2
+
+                else:
+                    order.order.status = 'Cancelled'
+                    order.status = 'Refunded'
+                    trans.type = 2
+                order.order.save()
+
                 trans.order = order.order
                 trans.payment = order
+                trans.amount = (_x['entity']['amount']/100)
                 trans.raw_data = body
                 trans.payment_token = _x['entity']['id']
                 trans.r_pay_id = _x['entity']['payment_id']
 
-
-
+                trans.save()
 
 
             elif body['event'] == 'payment.captured':
@@ -51,10 +74,14 @@ class RazorHookView(View):
                 print(_x['entity']['order_id'])
                 order = Payment.objects.get(rzp_order_id=razorpay_order_id)
                 order.order.is_payment_successfull = True
-                order.order.status ="Confirmed"
+                order.order.status = "Confirmed"
+                order.status = 'Captured'
+                order.save()
                 order.order.save()
+                order.signature = signature
                 trans = Transaction()
                 trans.order = order.order
+                trans.type = 1
                 trans.payment = order
                 trans.rzp_order_id = razorpay_order_id
                 trans.amount = razorpay_amount
@@ -101,9 +128,9 @@ class RazorHookView(View):
             print('----------------')
             return JsonResponse(
                 {
-                    'status':'Fail'
+                    'status': 'Fail'
                 }
             )
-        return  JsonResponse({
-            'status':'OK'
+        return JsonResponse({
+            'status': 'OK'
         })

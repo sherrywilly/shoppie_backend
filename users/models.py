@@ -55,7 +55,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 class UserOtp(models.Model):
-    otp = models.BigIntegerField()
+    otp = models.BigIntegerField(blank=True,null=True)
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     counter = models.PositiveIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now_add=True)

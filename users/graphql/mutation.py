@@ -26,6 +26,15 @@ class UserRegistrationMutation(graphene.Mutation):
         return UserRegistrationMutation(ok=True, user=user)
 
 
+class Myprofile(graphene.Mutation):
+    class Arguments:
+        id = graphene.String()
+
+    user = graphene.Field(UserType)
+
+
+    def mutate(cls,self,info,id=None):
+        return Myprofile()
 class SentOtpMutation(graphene.Mutation):
     class Arguments:
         phone = graphene.String()
@@ -40,9 +49,9 @@ class SentOtpMutation(graphene.Mutation):
                 __user = User.objects.get(phone=int(phone))
                 key = base64.b32encode(genKey(__user.phone).encode())
 
-                otp = pyotp.TOTP(key, interval=100)
+                otp = pyotp.TOTP(key, interval=1000)
                 print(otp.now())
-                __userotp, _ = UserOtp.objects.get_or_create(user_id=__user.id)
+                __userotp, _ = UserOtp.objects.get_or_create(user=__user)
                 __userotp.otp = otp.now()
                 __userotp.save()
                 print(otp.now())
@@ -69,7 +78,7 @@ class VerifyOtpMutation(graphene.Mutation):
     def mutate(cls, self, info, phone, otp):
         __user = User.objects.get(phone=int(phone))
         key = base64.b32encode(genKey(__user.phone).encode())
-        votp = pyotp.TOTP(key, interval=100)
+        votp = pyotp.TOTP(key, interval=1000)
 
         print(votp.now())
         if not votp.verify(str(__user.userotp.otp)):
@@ -77,7 +86,8 @@ class VerifyOtpMutation(graphene.Mutation):
 
         if __user.userotp.otp == int(otp):
             print("otp verification is successfully")
-            return VerifyOtpMutation(token=get_token(__user), refresh_token=create_refresh_token(__user), user=__user)
+
+            return VerifyOtpMutation(token=get_token(__user), refresh_token = str(create_refresh_token(__user)),user=__user)
         else:
             print("failed to validate")
             raise GraphQLError("INVALID OTP")

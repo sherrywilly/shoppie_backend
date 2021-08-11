@@ -3,18 +3,59 @@ import uuid
 from django.db import models
 
 # Create your models here.
+from django_editorjs_fields import EditorJsJSONField
 from versatileimagefield.fields import VersatileImageField, PPOIField
 
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    desc = models.CharField(max_length=10)
+    desc = EditorJsJSONField(
+        plugins=[
+            "@editorjs/image",
+            "@editorjs/header",
+            "@editorjs/list",
+            "editorjs-github-gist-plugin",
+            "editorjs-hyperlink",
+            "@editorjs/code",
+            "@editorjs/inline-code",
+            "@editorjs/table@1.3.0",
+        ],
+        tools={
+            "Gist": {
+                "class": "Gist"
+            },
+            "Hyperlink": {
+                "class": "Hyperlink",
+                "config": {
+                    "shortcut": 'CMD+L',
+                    "target": '_blank',
+                    "rel": 'nofollow',
+                    "availableTargets": ['_blank', '_self'],
+                    "availableRels": ['author', 'noreferrer'],
+                    "validate": False,
+                }
+            },
+            "Image": {
+                'class': 'ImageTool',
+                "config": {
+                    "endpoints": {
+                        # Your custom backend file uploader endpoint
+                        "byFile": "/editorjs/image_upload/"
+                    }
+                }
+            }
+        },
+        null=True,
+        blank=True,
+    )
     tax_rate = models.CharField(max_length=128, blank=True, null=True, default=0)
     weight = models.FloatField(default=0)
     length = models.FloatField(default=0)
     width = models.FloatField(default=0)
     height = models.FloatField(default=0)
     price = models.DecimalField(default=00,decimal_places=2, max_digits=6)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
     class Meta:
         # app_label = "products"
@@ -39,6 +80,8 @@ class ProductImage(models.Model):
     ppoi = PPOIField()
     is_featured = models.BooleanField(default=False)
     alt = models.CharField(max_length=128, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
 
 
@@ -62,6 +105,8 @@ class ProductVideo(models.Model):
         Product, related_name="video", on_delete=models.CASCADE
     )
     video = models.FileField(upload_to='products/videos',blank=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
 
     def save(self, *args, **kwargs):

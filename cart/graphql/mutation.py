@@ -1,26 +1,27 @@
-from operator import xor
-
-import  graphene
+import graphene
 from graphql import GraphQLError
+from graphql_jwt.decorators import login_required
 
 from cart.graphql.type import CartNode
-from cart.models import Cart,CartLine
-from design.models import Design
+from cart.models import Cart, CartLine
+from order.models import Design
+
 from product.models import Product
-from django.db import  transaction
+from django.db import transaction
 
 
 class CartLineMutation(graphene.Mutation):
     class Arguments:
         cart_id = graphene.ID()
 
-        product = graphene.Int(required = True)
-        price = graphene.Int(required =True)
+        product = graphene.Int(required=True)
+        price = graphene.Int(required=True)
 
     cart = graphene.Field(CartNode)
 
     @classmethod
-    def mutate(cls,self,info,product,price,**kwargs):
+    @login_required
+    def mutate(cls, self, info, product, price, **kwargs):
         # user = info.context.user ||0
         # print(kwargs.get())
         user_id = 1
@@ -42,10 +43,3 @@ class CartLineMutation(graphene.Mutation):
             return CartLineMutation(cart=cart)
         except Exception as e:
             raise GraphQLError(e)
-
-
-
-
-
-
-
