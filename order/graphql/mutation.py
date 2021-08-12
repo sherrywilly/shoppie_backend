@@ -70,7 +70,11 @@ class OrderMutation(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, self, info, billing_address, shipping_address, cart_id):
-        __cart = Cart.objects.get(pk=cart_id)
+        try:
+            __cart = Cart.objects.get(pk=cart_id)
+        except Exception as e:
+            raise GraphQLError("please make request with valid data")
+
         user_id = info.context.user.pk
         try:
             with transaction.atomic():
@@ -91,7 +95,7 @@ class OrderMutation(graphene.Mutation):
                 pay_order = client.order.create(
                     {'amount': int(order.basic_amount) * 100, 'currency': "INR", 'receipt': str(order.pk),
                      'payment_capture': 1})
-                payment,_ = Payment.objects.get_or_create(rzp_order_id=pay_order.get('id'))
+                payment, _ = Payment.objects.get_or_create(rzp_order_id=pay_order.get('id'))
                 print(order.basic_amount)
                 payment.total = order.total_order_value
                 payment.order = order

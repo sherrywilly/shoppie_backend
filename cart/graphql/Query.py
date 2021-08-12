@@ -10,7 +10,7 @@ class Query(graphene.ObjectType):
     my_cart = DjangoFilterConnectionField(CartNode)
 
     @login_required
-    def resolve_my_cart(self,info):
+    def resolve_my_cart(self, info):
         user = info.context.user
-        cart,_ = Cart.objects.get_or_create(user=user)
+        cart, _ = Cart.objects.get_or_create(user=user)
         return cart

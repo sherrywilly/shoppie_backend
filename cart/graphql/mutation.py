@@ -12,23 +12,21 @@ from django.db import transaction
 
 class CartLineMutation(graphene.Mutation):
     class Arguments:
-        cart_id = graphene.ID()
-
         product = graphene.Int(required=True)
-        price = graphene.Int(required=True)
+
 
     cart = graphene.Field(CartNode)
 
     @classmethod
     @login_required
-    def mutate(cls, self, info, product, price, **kwargs):
+    def mutate(cls, self, info, product, **kwargs):
 
         user_id = info.context.user.pk
         cart, _ = Cart.objects.get_or_create(user_id=user_id)
         try:
             with transaction.atomic():
                 _product = Product.objects.get(id=product)
-                _cartlilne = CartLine.objects.create(cart=cart, product=_product, price=price)
+                _cartlilne = CartLine.objects.create(cart=cart, product=_product, price=_product.price)
                 _design = Design()
                 try:
                     _design.cart_id = cart.pk

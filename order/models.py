@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 import uuid
+
+from versatileimagefield.fields import PPOIField, VersatileImageField
+
 from product.models import Product
 
 User = get_user_model()
@@ -31,8 +34,8 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     billing_address = models.ForeignKey(Address, on_delete=models.DO_NOTHING, related_name="billing_address")
     shipping_address = models.ForeignKey(Address, on_delete=models.DO_NOTHING, related_name="shipping_address")
-    total_order_value = models.DecimalField(decimal_places=2, max_digits=6,blank=True,null=True)
-    shipping_charges = models.DecimalField(default=00, decimal_places=2, max_digits=6)
+    total_order_value = models.DecimalField(decimal_places=2, max_digits=10,blank=True,null=True)
+    shipping_charges = models.DecimalField(default=00, decimal_places=2, max_digits=10)
     cart_id = models.CharField(blank=True, max_length=100)
     is_payment_successfull = models.BooleanField(default=False)
     status = models.CharField(max_length=50, choices=ORDER_STATUS, default="Pending")
@@ -70,7 +73,9 @@ class Design(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     cart_id = models.CharField(max_length=100, verbose_name="cart id", blank=True, null=True)
     cart_line = models.CharField(max_length=100, blank=True, null=True)
-    image = models.ImageField(upload_to="order_image/", blank=False)
+    # image = models.ImageField(upload_to="order_image/", blank=False)
+    image = VersatileImageField(upload_to="order_image", ppoi_field="ppoi", blank=False)
+    ppoi = PPOIField()
     video = models.FileField(upload_to="order_video/", blank=False)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)

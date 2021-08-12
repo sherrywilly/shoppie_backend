@@ -24,8 +24,8 @@ class CustomAccountManager(BaseUserManager):
 
         return self.create_user(phone, password, **kwargs)
 
-    def create_user(self, phone, password, **kwargs):
-        user = self.model(phone=phone, **kwargs)
+    def create_user(self, phone,email, password, **kwargs):
+        user = self.model(phone=phone,email=email, **kwargs)
         user.set_password(password)
         user.save()
         return user

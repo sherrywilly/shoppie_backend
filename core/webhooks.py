@@ -13,7 +13,7 @@ client = razorpay.Client(auth=(RAZORPAY_KEY, RAZORPAY_SECRET))
 
 
 class RazorHookView(View):
-    def get(self,request):
+    def get(self, request):
         return JsonResponse({
             'error': True,
             'message': "Invalid  Request"
@@ -42,11 +42,11 @@ class RazorHookView(View):
                 print(_x['entity']['id'])
                 order = Payment.objects.get(rzp_order_id=razorpay_order_id)
                 trans = Transaction()
-                if order.total > (_x['entity']['amount']/100) or order.total != (_x['entity']['amount']/100):
+                if order.total > (_x['entity']['amount'] / 100) or order.total != (_x['entity']['amount'] / 100):
                     order.status = "PartiallyRefunded"
                     trans.type = 3
 
-                    if (int(_x['entity']['amount'])/100) == order.amount_valid_for_refund:
+                    if (int(_x['entity']['amount']) / 100) == order.amount_valid_for_refund:
                         order.order.status = 'cancelled'
                         order.status = 'Refunded'
                         trans.type = 2
@@ -62,7 +62,7 @@ class RazorHookView(View):
                 order.save()
                 trans.order = order.order
                 trans.payment = order
-                trans.amount = (_x['entity']['amount']/100)
+                trans.amount = (_x['entity']['amount'] / 100)
                 trans.raw_data = body
                 trans.payment_token = _x['entity']['id']
                 trans.r_pay_id = _x['entity']['payment_id']
@@ -79,7 +79,7 @@ class RazorHookView(View):
                 order.order.status = "processing"
                 order.status = 'Captured'
                 order.signature = signature
-                order.charged_value = (razorpay_amount/100)
+                order.charged_value = (razorpay_amount / 100)
                 order.save()
                 order.order.save()
 
@@ -88,7 +88,7 @@ class RazorHookView(View):
                 trans.type = 1
                 trans.payment = order
                 trans.rzp_order_id = razorpay_order_id
-                trans.amount = (razorpay_amount/100)
+                trans.amount = (razorpay_amount / 100)
                 trans.method = _x['entity']['method']
                 if _x['entity']['method'] == 'card':
                     trans.card_holder_name = _x['entity']['card']['name']
@@ -100,7 +100,7 @@ class RazorHookView(View):
                 trans.vpa = _x['entity']['vpa']
                 trans.email = _x['entity']['email']
                 trans.phone = _x['entity']['contact']
-                trans.fee = (_x['entity']['fee']/100)
+                trans.fee = (_x['entity']['fee'] / 100)
                 trans.payment_token = _x['entity']['id']
                 trans.raw_data = body
                 trans.r_order_id = _x['entity']['order_id']

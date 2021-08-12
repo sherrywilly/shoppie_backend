@@ -20,10 +20,10 @@ class Payment(models.Model):
                                     verbose_name="razorpay order id")
     signature = models.CharField(max_length=500, null=True, blank=True)
     status = models.CharField(choices=PAYMENT_STATUS, default="Created", max_length=50)
-    total = models.DecimalField(decimal_places=2, max_digits=6,blank=True,null=True)
-    charged_value = models.DecimalField(decimal_places=2, max_digits=6,blank=True,null=True)
+    total = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
+    charged_value = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="payments")
-    gateway_fee = models.DecimalField(decimal_places=2, max_digits=6, default=0)
+    gateway_fee = models.DecimalField(decimal_places=2, max_digits=10, default=0)
     raw_data = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
@@ -52,7 +52,7 @@ class Transaction(models.Model):
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="transactions")
     type = models.IntegerField(choices=TYPE_CHOICE, default=1, blank=True)
 
-    amount = models.DecimalField(decimal_places=2, max_digits=6)
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
     rzp_order_id = models.CharField(unique=True, max_length=100, blank=True, null=True,
                                     verbose_name="razorpay_order_id")
 
@@ -67,7 +67,7 @@ class Transaction(models.Model):
     vpa = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(blank=True, null=True, max_length=12)
-    fee = models.DecimalField(decimal_places=2, max_digits=6, default=0)
+    fee = models.DecimalField(decimal_places=2, max_digits=10, default=0)
     payment_token = models.CharField(null=True, blank=True, max_length=100)
     raw_data = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)

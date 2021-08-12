@@ -6,3 +6,5 @@ from product.graphql.Type import ProductNode
 
 class Query(graphene.ObjectType):
     all_product = DjangoFilterConnectionField(ProductNode)
+
+

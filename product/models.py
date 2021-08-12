@@ -53,7 +53,7 @@ class Product(models.Model):
     length = models.FloatField(default=0)
     width = models.FloatField(default=0)
     height = models.FloatField(default=0)
-    price = models.DecimalField(default=00, decimal_places=2, max_digits=6)
+    price = models.DecimalField(default=00, decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 

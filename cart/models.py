@@ -36,7 +36,7 @@ class CartLine(models.Model):
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     quantity = models.PositiveIntegerField(default=1)
-    price = models.DecimalField(default=00, decimal_places=2, max_digits=6)
+    price = models.DecimalField(default=00, decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
