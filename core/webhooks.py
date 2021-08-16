@@ -27,15 +27,15 @@ class RazorHookView(View):
 
         webhookbody = request.body.decode('utf-8')
         body = json.loads(webhookbody)
-        print(body)
+        # print(body)
         payload_body = json.dumps(body, separators=(',', ':'))
-        signature = request.headers['X-Razorpay-Signature']
+        # signature = request.headers['X-Razorpay-Signature']
         try:
             payment_id = body['payload']['payment']['entity']['id']
             razorpay_order_id = body['payload']['payment']['entity']['order_id']
             razorpay_amount = body['payload']['payment']['entity']['amount']
             payment_method = body['payload']['payment']['entity']['method']
-            verify = client.utility.verify_webhook_signature(payload_body, signature, RAZORPAY_WEBHOOK_SECRET)
+            # verify = client.utility.verify_webhook_signature(payload_body, signature, RAZORPAY_WEBHOOK_SECRET)
             if body['event'] == 'refund.processed':
                 print('refund initiated')
                 _x = body['payload']['refund']
@@ -78,7 +78,7 @@ class RazorHookView(View):
                 order.order.is_payment_successfull = True
                 order.order.status = "processing"
                 order.status = 'Captured'
-                order.signature = signature
+                # order.signature = signature
                 order.charged_value = (razorpay_amount / 100)
                 order.save()
                 order.order.save()
@@ -90,11 +90,11 @@ class RazorHookView(View):
                 trans.rzp_order_id = razorpay_order_id
                 trans.amount = (razorpay_amount / 100)
                 trans.method = _x['entity']['method']
-                if _x['entity']['method'] == 'card':
+                if _x['entity']['method'] == "card":
                     trans.card_holder_name = _x['entity']['card']['name']
                     trans.card_issuer = _x['entity']['card']['issuer']
-                    trans.card_holder_network = _x['entity']['card']['issuer']['network']
-                    trans.card_last_4 = _x['entity']['card']['issuer']['last4']
+                    trans.card_holder_network = _x['entity']['card']['network']
+                    trans.card_last_4 = _x['entity']['card']['last4']
                 trans.bank = _x['entity']['bank']
                 trans.wallet = _x['entity']['wallet']
                 trans.vpa = _x['entity']['vpa']
@@ -105,7 +105,7 @@ class RazorHookView(View):
                 trans.raw_data = body
                 trans.r_order_id = _x['entity']['order_id']
                 trans.r_pay_id = _x['entity']['id']
-                trans.hook_signature = signature
+                # trans.hook_signature = signature
                 trans.save()
             elif body['event'] == 'payout.created':
                 print('payout created')

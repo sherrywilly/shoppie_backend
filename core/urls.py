@@ -10,7 +10,7 @@ from core.Schema import Schema
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=Schema))),
+    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=Schema)),name="graph"),
     path('editorjs/', include('django_editorjs_fields.urls')),
     path('hook/api/payment/',RazorHookView.as_view(),name="razorpayhook")
 

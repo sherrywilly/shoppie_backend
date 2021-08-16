@@ -59,7 +59,7 @@ class AddressMutation(graphene.Mutation):
 
 class OrderMutation(graphene.Mutation):
     class Arguments:
-        # billing and Shipping address are foregn keys
+        # billing and Shipping address are foreign keys
         billing_address = graphene.String(required=True)
         shipping_address = graphene.String(required=True)
         cart_id = graphene.String(required=True)
@@ -70,12 +70,13 @@ class OrderMutation(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, self, info, billing_address, shipping_address, cart_id):
+        user_id = info.context.user.pk
         try:
-            __cart = Cart.objects.get(pk=cart_id)
+            __cart = Cart.objects.get(pk = cart_id,user_id = user_id)
         except Exception as e:
             raise GraphQLError("please make request with valid data")
 
-        user_id = info.context.user.pk
+
         try:
             with transaction.atomic():
                 order = Order()
@@ -85,10 +86,12 @@ class OrderMutation(graphene.Mutation):
                 order.user_id = user_id
                 order.total_order_value = __cart.basic_price
                 order.save()
-                for i in __cart.cart_items.all():
+                cart_items = __cart.cart_items.all()
+                if cart_items.count() == 0:
+                    raise GraphQLError("this cart did not have any items")
+                for i in cart_items:
                     __orderline = OrderLine.objects.create(product=i.product, order=order)
                     _temp = Design.objects.get(cart_line=i.pk)
-
                     _temp.order_line_id = __orderline.pk
                     _temp.save()
                 __cart.delete()

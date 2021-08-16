@@ -66,7 +66,7 @@ class Transaction(models.Model):
     wallet = models.CharField(max_length=100, blank=True, null=True)
     vpa = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    phone = models.CharField(blank=True, null=True, max_length=12)
+    phone = models.CharField(blank=True, null=True, max_length=15)
     fee = models.DecimalField(decimal_places=2, max_digits=10, default=0)
     payment_token = models.CharField(null=True, blank=True, max_length=100)
     raw_data = models.JSONField(blank=True, null=True)

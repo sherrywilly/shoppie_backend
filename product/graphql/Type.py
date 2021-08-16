@@ -11,6 +11,7 @@ class ProductNode(DjangoObjectType):
         model = Product
         interfaces = (Node,)
         filter_fields = ('name', 'price',)
+        exclude = ('cartline_set','orderline_set')
     desc = graphene.JSONString()
     pk = graphene.Int()
 
