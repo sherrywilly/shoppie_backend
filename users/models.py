@@ -25,7 +25,7 @@ class CustomAccountManager(BaseUserManager):
         return self.create_user(phone, password, **kwargs)
 
     def create_user(self, phone,email, password, **kwargs):
-        user = self.model(phone=phone,email=email, **kwargs)
+        user = self.model(phone=phone,email=self.normalize_email(email), **kwargs)
         user.set_password(password)
         user.save()
         return user
@@ -36,7 +36,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         regex=r'^\+?1?\d{10,10}$',
         message="Phone must be in the format: '+999999999'.Please enter 10 digits mobile number.")
     phone = models.CharField(
-        validators=(phone_regex,), unique=True, max_length=10)
+        validators=(phone_regex,), unique=True, max_length=12)
     email = models.EmailField()
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)

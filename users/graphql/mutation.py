@@ -9,10 +9,14 @@ from graphql_jwt.shortcuts import get_token
 from users.graphql.Type import UserType
 from users.models import UserOtp
 from users.utils import genKey
-
+import re
+from django.contrib.auth.password_validation import validate_password
 User = get_user_model()
 
 
+EMAIL_REGEX = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+# PASSWORD_REGEX = r"/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&.])[A-Za-z\d$@$!%*?&.]{6, 20}/"
+ONLY_NUM_REGEX = r"^[0-9]*$"
 class UserRegistrationMutation(graphene.Mutation):
     class Arguments:
         phone = graphene.String()
@@ -25,6 +29,12 @@ class UserRegistrationMutation(graphene.Mutation):
 
     @classmethod
     def mutate(cls, self, info, phone, email, password):
+        if len(phone) !=10 and re.match(ONLY_NUM_REGEX,phone):
+            raise GraphQLError("Mobile no should be 10 numbers") 
+        elif email and not re.match(EMAIL_REGEX,email):
+            raise GraphQLError("please provide a valid email")
+        validate_password(password=password)
+
         try:
             user = User.objects.create_user(phone, email, password)
             return UserRegistrationMutation(ok=True, user=user,
@@ -54,7 +64,10 @@ class SentOtpMutation(graphene.Mutation):
     def mutate(cls, self, info, phone):
         try:
             if len(phone) == 10:
-                __user = User.objects.get(phone=int(phone))
+                try:
+                    __user = User.objects.get(phone=int(phone))
+                except:
+                    raise GraphQLError("This number is not present in our system")
 
                 key = base64.b32encode(genKey(__user.phone).encode())
 
@@ -88,7 +101,10 @@ class VerifyOtpMutation(graphene.Mutation):
     # user = graphene.
     @classmethod
     def mutate(cls, self, info, phone, otp):
-        __user = User.objects.get(phone=int(phone))
+        try:
+            __user = User.objects.get(phone=int(phone))
+        except:
+            raise GraphQLError("Invalid request with unregistered phone number")
         key = base64.b32encode(genKey(__user.phone).encode())
         votp = pyotp.TOTP(key, interval=1000)
 
@@ -100,7 +116,6 @@ class VerifyOtpMutation(graphene.Mutation):
             __user.userotp.counter = 0
             __user.userotp.save()
             print("otp verification is successfully")
-
             return VerifyOtpMutation(token=get_token(__user), refresh_token=str(create_refresh_token(__user)),
                                      user=__user)
         else:

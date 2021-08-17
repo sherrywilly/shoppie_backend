@@ -19,7 +19,6 @@ class OrderTestCase(TestSetup, GraphQLTestCase):
     def setUp(self):
         self.create_test_user()
 
-
     def test_check_out_test_case_with_valid_details(self):
         """
         this test case the checks the checkout functionality with valid datas
@@ -29,9 +28,9 @@ class OrderTestCase(TestSetup, GraphQLTestCase):
         """
         p1 = self.create_test_product()
         u = User.objects.get(phone="9744567054")
-        print(u)
+
         token = get_token(u)
-        print(token)
+
         headers = {"HTTP_AUTHORIZATION": f"JWT {token}"}
 
         cart, _ = Cart.objects.get_or_create(user=u)
@@ -57,7 +56,6 @@ class OrderTestCase(TestSetup, GraphQLTestCase):
                                          'shippingAddress': self.create_test_address(user=u), 'cartId': str(cart.pk)})
         # print(x.json())
         self.assertResponseNoErrors(x)
-
 
     def test_check_out_test_case_with_invalid_datas(self):
         """
@@ -94,3 +92,4 @@ class OrderTestCase(TestSetup, GraphQLTestCase):
         x = self.query(query, variables={'billingAddress': self.create_test_address(user=u),
                                          'shippingAddress': self.create_test_address(user=u), 'cartId': str(cart.pk)})
         # print(x.json())
+        self.assertResponseHasErrors(x)
