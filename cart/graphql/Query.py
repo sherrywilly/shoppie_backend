@@ -7,7 +7,7 @@ from cart.models import Cart
 
 
 class Query(graphene.ObjectType):
-    my_cart = DjangoFilterConnectionField(CartNode)
+    my_cart = graphene.Field(CartNode)
 
     @login_required
     def resolve_my_cart(self, info):

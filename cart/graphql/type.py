@@ -7,7 +7,7 @@ from cart.models import Cart, CartLine
 class CartNode(DjangoObjectType):
     class Meta:
         model = Cart
-        filter_fields = ('created_by', 'id')
+        filter_fields = ('user', 'id')
         interfaces = (Node,)
 
     pk = graphene.String()

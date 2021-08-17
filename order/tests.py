@@ -93,3 +93,21 @@ class OrderTestCase(TestSetup, GraphQLTestCase):
                                          'shippingAddress': self.create_test_address(user=u), 'cartId': str(cart.pk)})
         # print(x.json())
         self.assertResponseHasErrors(x)
+
+    def test_get_my_orders(self):
+      query = """
+     query{
+            myOrders{
+              edges{
+                node{
+                  orderId
+                
+                  totalOrderValue
+                }
+              }
+            }
+          }
+      """
+      self.client.login(phone="9744567054", password="anoop@123")
+      x = self.query(query)
+      self.assertResponseNoErrors(x)

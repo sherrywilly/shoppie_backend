@@ -6,9 +6,9 @@ from order.graphql.mutation import AddressMutation, OrderMutation
 from product.graphql.Query import Query as ProductQuery
 from order.graphql.Query import Query as OrderQuery
 from users.graphql.mutation import VerifyOtpMutation, SentOtpMutation, UserRegistrationMutation
+from cart.graphql.Query import Query as MyCart
 
-
-class Query(ProductQuery, OrderQuery, graphene.ObjectType):
+class Query(ProductQuery, OrderQuery,MyCart, graphene.ObjectType):
     pass
 
 
