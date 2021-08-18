@@ -42,7 +42,7 @@ class TestProductcart(TestCase):
 
     def test_product_cart_adding_With_valid(self):
         payload = '''mutation{
-      addToCart(product:7){
+      addToCart(product:9){
         cart{
           id
           user{
@@ -149,7 +149,7 @@ class CartItemDeletionTestCase(TestSetup, GraphQLTestCase):
             cart.pk), cart_item_id=str(uuid4()))
         self.assertEqual(x['errors'][0]['message'],"invalid cart item")
 
-    def test_cart_item_deletion_with_invalid_cart_item_id(self):
+    def test_cart_item_deletion_with_invalid_cart_id(self):
     
         x = self.sent_delete_request(cart_id=str(
             uuid4()), cart_item_id=str(uuid4()))

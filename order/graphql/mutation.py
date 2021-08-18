@@ -11,6 +11,8 @@ from order.models import Address, Order, OrderLine, Design
 from django.db import transaction
 from payment.graphql.type import PaymentNode
 from payment.models import Transaction as Trans, Payment
+import re
+
 
 client = razorpay.Client(auth=(RAZORPAY_KEY, RAZORPAY_SECRET))
 
@@ -35,10 +37,12 @@ class AddressMutation(graphene.Mutation):
     def mutate(cls, self, info, first_name, last_name, address_one, mobile, area, pincode, state, id=None, **kwargs):
         user_id = info.context.user.id
         try:
-            if id is not None:
-                address = Address.objects.get(id=id)
-            else:
-                address = Address()
+            if len(mobile)!=10:
+                raise GraphQLError("mobile number should have 10 digits")
+            elif len(pincode) != 6 :
+                raise GraphQLError("please try with valid pin code should only have 6 digits")
+            
+            address = Address()
             address.first_name = first_name
             address.last_name = last_name
             address.address_one = address_one

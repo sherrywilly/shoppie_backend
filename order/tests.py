@@ -12,6 +12,8 @@ from graphene_django.utils.testing import GraphQLTestCase
 from order.models import Design
 
 User = get_user_model()
+#  need to add test in address
+
 
 
 class OrderTestCase(TestSetup, GraphQLTestCase):
@@ -95,7 +97,7 @@ class OrderTestCase(TestSetup, GraphQLTestCase):
         self.assertResponseHasErrors(x)
 
     def test_get_my_orders(self):
-      query = """
+        query = """
      query{
             myOrders{
               edges{
@@ -108,6 +110,59 @@ class OrderTestCase(TestSetup, GraphQLTestCase):
             }
           }
       """
-      self.client.login(phone="9744567054", password="anoop@123")
-      x = self.query(query)
-      self.assertResponseNoErrors(x)
+        self.client.login(phone="9744567054", password="anoop@123")
+        x = self.query(query)
+        self.assertResponseNoErrors(x)
+class AddressTestCase(TestSetup, GraphQLTestCase):
+    def setUp(self):
+        self.create_test_user()
+        self.client.login(phone="9744567054", password="anoop@123")
+        return super().setUp()
+
+    def sent_address(self,fname,lname,addone,mob,area,state,pin,**kwargs):
+        query = """
+        mutation($fname:String!,$lname:String!,$addone:String!,$addtwo:String!,$mob:String!,$cname:String!,$area:String!,$state:String!,$pin:String!){
+            addAddress(firstName:$fname,lastName:$lname,addressOne:$addone,addressTwo:$addtwo,mobile:$mob,companyName:$cname,area:$area,state:$state,pincode:$pin){
+              address{
+                id
+                pk
+                firstName
+                lastName
+                mobile
+                area
+              }
+            }
+          }
+          """
+        res = self.query(query,variables={'fname':fname,'lname':lname,'addone':addone,'addtwo':kwargs.get('addtwo',""),'mob':mob,'area':area,'state':state,'pin':pin,'cname':kwargs.get('cname'," ")})
+        return res
+
+    def test_add_address_with_invalid_phone(self):
+      """
+      it validates the no should have 10 numbers
+      """
+      res = self.sent_address(fname="tester",lname="test",addone="ABC house ,near ABC ABC",mob="6878678",area="adoor",pin="686867",state="ABC")
+      self.assertResponseHasErrors(res)
+      response = res.json()
+      self.assertEqual(response['errors'][0]['message'],'mobile number should have 10 digits')
+
+    def test_add_address_with_invalid_pincode(self):
+      '''
+      try with invalid pincode it only validated the length of the pincode
+      
+      '''
+      res = self.sent_address(fname="tester",lname="test",addone="ABC house ,near ABC ABC",mob="6878678352",area="adoor",pin="6868",state="ABC")
+      self.assertResponseHasErrors(res)
+      response = res.json()
+      self.assertEqual(response['errors'][0]['message'],'please try with valid pin code should only have 6 digits')
+
+    def test_add_address_with_valid_data(self):
+      '''
+      this will make test with all required datas
+      '''
+      print("-------------------------==============================----------------------")
+      res = self.sent_address(fname="tester",lname="test",addone="ABC house ,near ABC ABC",mob="6878678352",area="adoor",pin="686865",state="ABC")
+      self.assertResponseNoErrors(res,msg="ohkkkkkkkkkkkkkkkkkkkkkkkk")
+      
+
+      

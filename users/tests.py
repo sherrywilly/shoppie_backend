@@ -1,3 +1,4 @@
+import json
 from re import S
 from django.contrib.auth import get_user_model
 from django.db.models import query
@@ -129,7 +130,8 @@ class UserLoginTestCase(TestSetup, GraphQLTestCase):
         self.sent_login(phone)
         user = User.objects.get(phone=phone)
         res = self.verify_otp(phone,otp=user.userotp.otp)
-        print(res)
+        # print(res)
+        # self.assertResponseNoErrors(json.dumps(res))
         self.assertEqual(res['data']['verifyLogin']['user']['phone'],phone)
 
     def test_verify_otp_with_invalid_otp(self):
