@@ -45,7 +45,7 @@ class CartLineMutation(graphene.Mutation):
                     _design.save()
                 except Exception as e:
                     raise GraphQLError(
-                        f"please attach the  image and video to add this product {info.context.FILES}")
+                        "please attach the  image and video to add this product")
             return CartLineMutation(cart=cart)
         except Exception as e:
             raise GraphQLError(e)
@@ -71,4 +71,4 @@ class CartLineDeletionMutation(graphene.Mutation):
         except:
             raise GraphQLError('invalid cart item')
         cart_item.delete()
-        return CartLineDeletionMutation(status="ok",message="successfully deleted the cart item")
+        return CartLineDeletionMutation(status="ok", message="successfully deleted the cart item")

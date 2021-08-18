@@ -23,7 +23,7 @@ def get_image(name='test.png', ext='png', size=(1, 1), color=(0, 0, 0)):
     return SimpleUploadedFile(name, file_obj.getvalue(), content_type='image/png')
 
 
-class TestProductcart(TestCase):
+class TestProductcart(GraphQLTestCase, TestCase):
     def setUp(self):
         User.objects.create_user(
             email="test@gmail.com", phone="9744567054", password="dsfSdfdsf@123213")
@@ -40,12 +40,32 @@ class TestProductcart(TestCase):
         print(p.pk)
         # return super().setUp()
 
+    def test_add_to_cart_with_out_media(self):
+        self.client.login(phone="9744567054", password="dsfSdfdsf@123213")
+        query_string = '''
+            mutation addToCart($p_id :Int!){
+                addToCart(product:$p_id){
+                                cart{
+                                     id
+
+                                    }
+                                  }
+                                }
+                                 '''
+
+        response = self.query(query_string, variables={
+                              'p_id': Product.objects.all()[0].pk})
+        # print(response.json())
+        res = response.json()
+        self.assertResponseHasErrors(response)
+        assert res['errors']['message'] == "please attach the  image and video to add this product"
+
     def test_product_cart_adding_With_valid(self):
         payload = '''mutation{
-      addToCart(product:9){
-        cart{
-          id
-          user{
+        addToCart(product:9){
+          cart{
+            id
+            user{
                   id
                 }
                 cartItems{
@@ -140,25 +160,24 @@ class CartItemDeletionTestCase(TestSetup, GraphQLTestCase):
         self.assertEqual(x['data']['dropCartItem']['status'], 'ok')
         self.assertEqual(x['data']['dropCartItem']['message'],
                          'successfully deleted the cart item')
-    
 
     def test_cart_item_deletion_with_invalid_cart_item_id(self):
         cart = self.create_test_cart()
         cart_item = cart.cart_items.all()[0]
         x = self.sent_delete_request(cart_id=str(
             cart.pk), cart_item_id=str(uuid4()))
-        self.assertEqual(x['errors'][0]['message'],"invalid cart item")
+        self.assertEqual(x['errors'][0]['message'], "invalid cart item")
 
     def test_cart_item_deletion_with_invalid_cart_id(self):
-    
+
         x = self.sent_delete_request(cart_id=str(
             uuid4()), cart_item_id=str(uuid4()))
         # print(x)
-        self.assertEqual(x['errors'][0]['message'],'invalid cart id')
+        self.assertEqual(x['errors'][0]['message'], 'invalid cart id')
 
     def test_get_my_cart(self):
-      cart = self.create_test_cart()
-      query = """
+        cart = self.create_test_cart()
+        query = """
       query{
            myCart{
             id
@@ -172,6 +191,6 @@ class CartItemDeletionTestCase(TestSetup, GraphQLTestCase):
           }
           }
       """
-      self.client.login(phone="9744567054", password="anoop@123")
-      x = self.query(query)
-      self.assertResponseNoErrors(x)
+        self.client.login(phone="9744567054", password="anoop@123")
+        x = self.query(query)
+        self.assertResponseNoErrors(x)
